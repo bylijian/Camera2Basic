@@ -828,7 +828,7 @@ public class Camera2BasicFragment extends Fragment
             int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getOrientation(rotation));
 
-            CameraCaptureSession.CaptureCallback CaptureCallback
+            final CameraCaptureSession.CaptureCallback CaptureCallback
                     = new CameraCaptureSession.CaptureCallback() {
 
                 @Override
@@ -843,7 +843,29 @@ public class Camera2BasicFragment extends Fragment
 
             mCaptureSession.stopRepeating();
             mCaptureSession.abortCaptures();
-            mCaptureSession.capture(captureBuilder.build(), CaptureCallback, null);
+            //兼容华为这傻逼摄像头,需要延迟后才行
+            mBackgroundHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(200);
+//                        mPreviewSession.capture(mPreviewBuilder.build(), new CameraCaptureSession.CaptureCallback() {
+//                            @Override
+//                            public void onCaptureCompleted(CameraCaptureSession session,
+//                                                           CaptureRequest request,
+//                                                           TotalCaptureResult result) {
+//                                //重新启动预览界面
+//                                //   startPreview();
+//                            }
+//                        }, mBackgroundHandler);
+                        mCaptureSession.capture(captureBuilder.build(), CaptureCallback, null);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
